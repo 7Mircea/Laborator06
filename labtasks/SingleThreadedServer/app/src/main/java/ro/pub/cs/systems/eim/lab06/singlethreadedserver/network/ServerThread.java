@@ -53,7 +53,7 @@ public class ServerThread extends Thread {
 
                 // TODO exercise 5c
                 // simulate the fact the communication routine between the server and the client takes 3 seconds
-
+                Thread.sleep(3000);
                 PrintWriter printWriter = Utilities.getWriter(socket);
                 printWriter.println(serverTextEditText.getText().toString());
                 socket.close();
@@ -63,10 +63,10 @@ public class ServerThread extends Thread {
                 // move the communication routine between the server and the client on a separate thread (each)
 
             }
-        } catch (IOException ioException) {
-            Log.e(Constants.TAG, "An exception has occurred: " + ioException.getMessage());
+        } catch (IOException | InterruptedException exception) {
+            Log.e(Constants.TAG, "An exception has occurred: " + exception.getMessage());
             if (Constants.DEBUG) {
-                ioException.printStackTrace();
+                exception.printStackTrace();
             }
         }
     }
