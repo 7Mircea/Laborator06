@@ -4,9 +4,13 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.TextView;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.net.Socket;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import ro.pub.cs.systems.eim.lab06.ftpserverwelcomemessage.general.Constants;
+import ro.pub.cs.systems.eim.lab06.ftpserverwelcomemessage.general.Utilities;
 
 public class FTPServerCommunicationAsyncTask extends AsyncTask<String, String, Void> {
 
@@ -29,10 +33,32 @@ public class FTPServerCommunicationAsyncTask extends AsyncTask<String, String, V
             // - the value does not start with Constants.FTP_MULTILINE_END_CODE2 = "220 "
             // append the line to the welcomeMessageTextView text view content (on the UI thread !!!) - publishProgress(...)
             // close the socket
+            socket = new Socket(params[0], Constants.FTP_PORT);
+            BufferedReader bufferedReader = Utilities.getReader(socket);
+            String line = bufferedReader.readLine();
+            if (line != null && line.startsWith(Constants.FTP_MULTILINE_START_CODE)) {
+                while ((line = bufferedReader.readLine()) != null) {
+                    if (!line.equals(Constants.FTP_MULTILINE_END_CODE1) && !line.startsWith(Constants.FTP_MULTILINE_END_CODE2)) {
+                        publishProgress(line);
+                    } else {
+                        break;
+                    }
+                }
+            }
         } catch (Exception exception) {
             Log.d(Constants.TAG, exception.getMessage());
             if (Constants.DEBUG) {
                 exception.printStackTrace();
+            }
+        } finally {
+            try {
+            if (socket != null) {
+                socket.close();
+            }} catch (IOException e) {
+                Log.d(Constants.TAG,e.getMessage());
+                if (Constants.DEBUG) {
+                    e.printStackTrace();
+                }
             }
         }
         return null;
@@ -44,12 +70,14 @@ public class FTPServerCommunicationAsyncTask extends AsyncTask<String, String, V
     }
 
     @Override
-    protected void onProgressUpdate(String... progres) {
+    protected void onProgressUpdate(String... progress) {
         // TODO exercise 4
         // append the progress[0] to the welcomeMessageTextView text view
+        welcomeMessageTextView.append(progress[0] + "\n");
     }
 
     @Override
-    protected void onPostExecute(Void result) {}
+    protected void onPostExecute(Void result) {
+    }
 
 }
